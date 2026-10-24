@@ -7,7 +7,8 @@ const { spawn } = require("child_process");
 const fs = require("fs");
 const path = require("path");
 // api/ 不在热重载目录里（reloader 只清 message/command/dou），这里手动清缓存拿最新版；
-// qoder_api 无状态（纯 env 配置），重读安全，改它不用重启机器人
+// qoder_api 无状态（纯 env 配置），重读安全，改它不用重启机器人。
+// 注意：改完 api/qoder_api.js 要碰一下本文件（或发 cc热更）才会重读。
 const qoderApiPath = require.resolve("../../api/qoder_api");
 delete require.cache[qoderApiPath];
 const { runQoder } = require(qoderApiPath);

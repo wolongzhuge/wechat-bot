@@ -65,6 +65,17 @@ function resolveCli() {
     return { bin, needsShell: /\.(cmd|bat)$/i.test(bin) || !process.env.qoder_cli_bin };
 }
 
+// 机器人可能是从带 Qoder Desktop 环境的终端拉起来的，那套变量会让 CLI 认定自己是 Agent SDK 入口，
+// 直接抛 sdk_invalid_args 退出。CLI 的登录态在 ~/.qoder-cn，不靠这些变量，统一剥掉再起子进程。
+const SDK_ENV = /^(QODER_AGENT_SDK_|QODER_SDK_|QODERCN_CLI|QODERCN_SESSION_TYPE|QODER_MCP_LAZY|QODER_WORKER_)/;
+function childEnv() {
+    const env = Object.assign({}, process.env);
+    for (const k of Object.keys(env)) {
+        if (SDK_ENV.test(k)) delete env[k];
+    }
+    return env;
+}
+
 // 管理员终端要按模型切换，模型参数走这个模板（qoderclicn 用 -m）
 const modelArgTemplate = process.env.qoder_cli_model_arg || "-m {model}";
 
@@ -79,7 +90,7 @@ function runQoder(prompt, opts) {
     const timeoutMs = parseInt(process.env.qoder_timeout_ms || "180000", 10);
 
     return new Promise((resolve, reject) => {
-        const child = spawn(bin, args, { windowsHide: true, shell: needsShell });
+        const child = spawn(bin, args, { windowsHide: true, shell: needsShell, env: childEnv() });
         let out = "";
         let err = "";
         const timer = setTimeout(() => {
@@ -96,7 +107,11 @@ function runQoder(prompt, opts) {
         });
         child.on("close", (code) => {
             clearTimeout(timer);
-            if (code !== 0 && !out.trim()) return reject(new Error("Qoder CLI 退出码 " + code + " " + err.slice(0, 200)));
+            if (code !== 0 && !out.trim()) {
+                // 只取第一行：CLI 的报错后面跟着一大串调用栈，微信里看着像乱码
+                const first = String(err || "").trim().split("\n")[0].slice(0, 300);
+                return reject(new Error("Qoder CLI 退出码 " + code + " " + first));
+            }
             resolve(out.trim());
         });
     });
