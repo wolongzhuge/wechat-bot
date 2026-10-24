@@ -1,0 +1,30 @@
+{
+  "name": "chat_wechat",
+  "version": "1.0.0",
+  "description": "微信群机器人：六个桌游玩法 + 仅私聊的管理员终端（iPad 协议 HTTP 服务端）",
+  "main": "app.js",
+  "scripts": {
+    "dev": "node app.js",
+    "login": "node scripts/login.js",
+    "probe": "node scripts/probe.js",
+    "test": "node test/admin_test.js",
+    "test:admin": "node test/admin_test.js",
+    "test:admin-private": "node scripts/test-admin-private.js",
+    "test:mahjong": "node scripts/test-mahjong-play.js",
+    "test:routing": "node scripts/test-group-routing.js",
+    "e2e": "node test/e2e_test.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "axios": "^1.6.5",
+    "dotenv": "^16.0.3",
+    "jsonfile": "^6.1.0",
+    "moment": "^2.29.4",
+    "openai": "^4.52.1",
+    "xml2js": "^0.5.0"
+  },
+  "author": "iMorning",
+  "license": "ISC"
+}
